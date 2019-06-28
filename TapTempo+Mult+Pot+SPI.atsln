@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# AvrStudio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "TapTempo+Mult+Pot+SPI", "TapTempo+Mult+Pot+SPI\TapTempo+Mult+Pot+SPI.cproj", "{5DA82A10-B9C5-4D60-A527-13EF0BF99D25}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5DA82A10-B9C5-4D60-A527-13EF0BF99D25}.Debug|AVR.ActiveCfg = Debug|AVR
+		{5DA82A10-B9C5-4D60-A527-13EF0BF99D25}.Debug|AVR.Build.0 = Debug|AVR
+		{5DA82A10-B9C5-4D60-A527-13EF0BF99D25}.Release|AVR.ActiveCfg = Release|AVR
+		{5DA82A10-B9C5-4D60-A527-13EF0BF99D25}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
