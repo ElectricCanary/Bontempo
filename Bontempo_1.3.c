@@ -4,6 +4,8 @@
  * Created: 15/07/2019 21:30:51
  * Author : Antoine Ricoux
  
+ website : https://electric-canary.com
+ 
  This is a tap tempo with modulation for PT2399-based delay
  This code is created for the ATtiny84A and digital potentiometer MCP41100 (or MCP42100)
  
