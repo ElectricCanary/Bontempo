@@ -27,6 +27,8 @@
  Recommended fuses : 
  Low Fuse = 0xd2	High Fuse = 0xdc (Reset enabled, led 2 disabled)
  Low Fuse = 0xd2	High Fuse = 0x5c !!!CAREFUL!!! RESET disabled, led2 enabled
+ 
+ Thanks to Florian Dupeyron who helped me debug some stuff
  */ 
 
 #include <avr/io.h>
