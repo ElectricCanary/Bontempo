@@ -70,7 +70,7 @@
 #define DEPTHPIN PINA3
 #define DEPTHBV 3
 #define N_ARRAY 256
-#define DEBOUNCE_TIME 500	//Tap button debounce time in microseconds
+#define DEBOUNCE_TIME 800	//Tap button debounce time in microseconds
 #define RAND_MAX 0x7fff
 
 volatile unsigned long timevalue;
