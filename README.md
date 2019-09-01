@@ -1,6 +1,6 @@
 The Bontempo is a Tap Tempo & Modulation solution for PT2399 delay
 
-Website : https://electric-canary.com
+Website : https://electric-canary.com/bontempo
 
 Support : support@electric-canary.com
 
