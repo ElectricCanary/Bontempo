@@ -25,8 +25,8 @@
  14: GND
  
  Recommended fuses : 
- Low Fuse = 0xc2	High Fuse = 0xdd (Reset enabled, led 2 disabled)
- Low Fuse = 0xc2	High Fuse = 0x5d !!!CAREFUL!!! RESET disabled, led2 enabled
+ Low Fuse = 0xd2	High Fuse = 0xdc (Reset enabled, led 2 disabled)
+ Low Fuse = 0xd2	High Fuse = 0x5c !!!CAREFUL!!! RESET disabled, led2 enabled
  */ 
 
 #include <avr/io.h>
@@ -69,7 +69,6 @@
 #define DEPTHBV 3
 #define N_ARRAY 256
 #define DEBOUNCE_TIME 500	//Tap button debounce time in microseconds
-#define DELAY_MIN 51
 #define RAND_MAX 0x7fff
 
 volatile unsigned long timevalue;
@@ -338,8 +337,10 @@ void modtest(void)	//testing if the mod pin are tied to ground at startup, if so
 void blink1(void)		//toggles led to verify interactions
 {
 	LEDPORT ^= (1<<LEDPIN);
+	LED2PORT^= (1<<LED2PIN);
 	_delay_ms(150);
 	LEDPORT ^= (1<<LEDPIN);
+	LED2PORT ^= (1<<LED2PIN);
 	_delay_ms(150);
 }
 
@@ -399,17 +400,11 @@ ISR(TIM0_COMPA_vect)
 }
 
 int main(void)
-{
-	SPIDDR |= (1<<CLKPIN) | (1<<DATAPIN); //SPI pins as output
-	CSDDR |= (1<<CSPIN);
-	CSPORT |= (1<<CSPIN);	//Chip select pin high (not selected)
+{	
+	_delay_ms(1000); //Waiting for PT2399 to start-up
+	modtest();		//Checking if modulation is disabled
 	
-	SPI_Transmit(250);	//wait for PT2399 startup
-	_delay_ms(550);
-	
-	modtest();
-	
-	LEDDDR |= (1<<LEDPIN);	//LED pin as output
+	LEDDDR |= (1<<LEDPIN);	//LED pins as output
 	LED2DDR |= (1<<LED2PIN);
 	BUTTONPORT |= (1<<BUTTONPIN);	//Tap Button pin set to high 
 	
@@ -446,14 +441,20 @@ int main(void)
 	ADCSRA |= (1<<ADEN) | (1<<ADIE) | (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0); //Enabling ADC, 16 prescaler, ADC interrupts enable
 	ADCSRB |= (1<<ADLAR); //8bit conversion
 	
+	SPIDDR |= (1<<CLKPIN) | (1<<DATAPIN); //SPI pins as output
+	CSDDR |= (1<<CSPIN);
+	CSPORT |= (1<<CSPIN);	//Chip select pin high (not selected)
+	
 	uint16_t mstempo;		//The current tempo tapped (it will  be multiplied by the tempo div)
 	uint16_t ledtempo;		//tempo for toggling LED (not influenced by tempo div)
+	uint8_t delaymin = 51;
 	uint16_t delaymax = 1291;	//maximum tempo if not in clean mode
 	int8_t pwmfine[] = {25,21,16,11,6,0,-7,-11,-15,-19,-23};	//pwm values for +-5ms offset
 	uint8_t delta;
 	unsigned long cleantimevalue;
 	if (modenable == 0)	//if mod disabled change max delay
 	{
+		delaymin = 41;
 		delaymax = 1134;
 	}
 	
@@ -727,9 +728,9 @@ int main(void)
 			{
 				mstempo = round(ledtempo * divmult);
 				
-				if (mstempo < DELAY_MIN)		//clipping current tempo to min and max tempo
+				if (mstempo < delaymin)		//clipping current tempo to min and max tempo
 				{
-					mstempo = DELAY_MIN;
+					mstempo = delaymin;
 				}
 				
 				if (mstempo > delaymax)
@@ -789,9 +790,9 @@ int main(void)
 				ledtempo = round((ledtempo + msturns)/2);
 			}
 			
-			if (mstempo < DELAY_MIN)		//clipping current tempo to min and max tempo
+			if (mstempo < delaymin)		//clipping current tempo to min and max tempo
 			{
-				mstempo = DELAY_MIN;
+				mstempo = delaymin;
 			}
 			
 			if (mstempo > delaymax)
@@ -799,9 +800,9 @@ int main(void)
 				mstempo = delaymax;
 			}
 			
-			if (ledtempo < DELAY_MIN)	//clipping LED toggling to min and max tempo
+			if (ledtempo < delaymin)	//clipping LED toggling to min and max tempo
 			{
-				ledtempo = DELAY_MIN;
+				ledtempo = delaymin;
 			}
 			
 			if (ledtempo > delaymax)
