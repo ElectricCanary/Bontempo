@@ -28,7 +28,7 @@
  Low Fuse = 0xd2	High Fuse = 0xdc (Reset enabled, led 2 disabled)
  Low Fuse = 0xd2	High Fuse = 0x5c !!!CAREFUL!!! RESET disabled, led2 enabled
  
- Thanks to Florian Dupeyron who helped me debug some stuff
+ Thanks to Florian Dupeyron for helping me debug some stuff
  */ 
 
 #include <avr/io.h>
@@ -425,7 +425,7 @@ int main(void)
 	TCNT1 = 0;
 	if (modenable == 1)
 	{
-		OCR1A = 250;
+		OCR1A = 300;
 		TCCR1A |= (1<<COM1A1);	
 		TIMSK1 |= (1<<OCIE1A);
 	}
@@ -447,8 +447,8 @@ int main(void)
 	CSDDR |= (1<<CSPIN);
 	CSPORT |= (1<<CSPIN);	//Chip select pin high (not selected)
 	
-	uint16_t mstempo;		//The current tempo tapped (it will  be multiplied by the tempo div)
-	uint16_t ledtempo;		//tempo for toggling LED (not influenced by tempo div)
+	uint16_t divtempo;		//The current tempo tapped (it will  be multiplied by the tempo div)
+	uint16_t mstempo;		//tempo for toggling LED (not influenced by tempo div)
 	uint8_t delaymin = 51;
 	uint16_t delaymax = 1291;	//maximum tempo if not in clean mode
 	int8_t pwmfine[] = {25,21,16,11,6,0,-7,-11,-15,-19,-23};	//pwm values for +-5ms offset
@@ -569,7 +569,7 @@ int main(void)
 			
 			if (tap == 1)
 			{
-				delta = 5 + mstempo - tempo[data];	//difference between tempo tapped and closest tempo in conversion chart
+				delta = 5 + divtempo - tempo[data];	//difference between tempo tapped and closest tempo in conversion chart
 				offset = offset + pwmfine[delta];	//compensate with pwm if tap tempo is active
 			}
 			
@@ -644,22 +644,22 @@ int main(void)
 		
 			if (wavetype == 2)
 			{
-				currentinc = pgm_read_word_near(triangle + inc);
+				currentinc = pgm_read_word_near(triangle + inc);	//Triangle
 			}
 		
 			if (wavetype == 3)
 			{
-				currentinc = pgm_read_word_near(saw + inc);
+				currentinc = pgm_read_word_near(saw + inc);			//Sawtooth
 			}
 		
 			if (wavetype == 4)
 			{
-				currentinc = pgm_read_word_near(saw + 255 - inc);
+				currentinc = pgm_read_word_near(saw + 255 - inc);	//Reverse Sawtooth
 			}
 		
 			if (wavetype == 5 && (inc%50) == 0)
 			{
-				currentinc = rand() / (RAND_MAX / 401);	//random
+				currentinc = rand() / (RAND_MAX / 401);				//random
 			}
 		}
 		
@@ -728,29 +728,31 @@ int main(void)
 			
 			if (tap == 1)	//if in tap control, update digital pot value
 			{
-				mstempo = round(ledtempo * divmult);
+				divtempo = round(mstempo * divmult);
 				
-				if (mstempo < delaymin)		//clipping current tempo to min and max tempo
+				if (divtempo < delaymin)		//clipping current tempo to min and max tempo
 				{
-					mstempo = delaymin;
+					divtempo = delaymin;
 				}
 				
-				if (mstempo > delaymax)
+				if (divtempo > delaymax)
 				{
-					mstempo = delaymax;
+					divtempo = delaymax;
 				}
 				
 				if (modenable == 1)
 				{
-					data = findClosest(mstempo);
+					data = findClosest(divtempo);
 				}
 				if (modenable == 0)
 				{
-					data = nomodfindClosest(mstempo);
+					data = nomodfindClosest(divtempo);
 				}
 				SPI_Transmit(data);
 			}
 			
+			ledturns = 0;
+			led2turns = 0;
 			previousdiv = divtogglevalue;	//reseting previousdiv to detect next move
 		}
 		
@@ -782,17 +784,27 @@ int main(void)
 			
 			if (nbtap==1)		//if second tap, tempo = time elapsed between the 2 button press
 			{
-				mstempo = msturns * divmult;
-				ledtempo = msturns;
+				divtempo = msturns * divmult;
+				mstempo = msturns;
 			}
 			
 			if (nbtap!=1)		//if not second tap, average every tap
 			{
-				mstempo = round((mstempo + (msturns*divmult)) / 2);
-				ledtempo = round((ledtempo + msturns)/2);
+				divtempo = round((divtempo + (msturns*divmult)) / 2);
+				mstempo = round((mstempo + msturns)/2);
 			}
 			
-			if (mstempo < delaymin)		//clipping current tempo to min and max tempo
+			if (divtempo < delaymin)		//clipping current tempo to min and max tempo
+			{
+				divtempo = delaymin;
+			}
+			
+			if (divtempo > delaymax)
+			{
+				divtempo = delaymax;
+			}
+			
+			if (mstempo < delaymin)	//clipping LED toggling to min and max tempo
 			{
 				mstempo = delaymin;
 			}
@@ -802,24 +814,14 @@ int main(void)
 				mstempo = delaymax;
 			}
 			
-			if (ledtempo < delaymin)	//clipping LED toggling to min and max tempo
-			{
-				ledtempo = delaymin;
-			}
-			
-			if (ledtempo > delaymax)
-			{
-				ledtempo = delaymax;
-			}
-			
 			if (modenable == 1)
 			{
-				data = findClosest(mstempo);			//wiper position returned by position in array
+				data = findClosest(divtempo);			//wiper position returned by position in array
 			}
 			
 			if (modenable == 0)
 			{
-				data = nomodfindClosest(mstempo);			//wiper position returned by position in array
+				data = nomodfindClosest(divtempo);			//wiper position returned by position in array
 			}
 			
 			SPI_Transmit(data);		//sending wiper position to digital pot
@@ -828,6 +830,8 @@ int main(void)
 			laststate = 1;
 			TCNT1 = 0;			//reseting counter and ms
 			msturns = 0;
+			ledturns = 0;
+			led2turns = 0;
 			tap = 1;			//now in tap control mode
 		}
 		
@@ -837,20 +841,29 @@ int main(void)
 			LED2PORT |= (1<<LED2PIN);
 		}
 		
-		if (ledturns >= ledtempo && tap==1)	//turns LED on for 8ms every downbeat
+		if (tap == 1)
 		{
-			ledturns = 0;
-			LEDPORT |= (1<<LEDPIN);
-			_delay_ms(8);
-			LEDPORT &= ~(1<<LEDPIN);
-		}
+			if (led2turns >= divtempo) //Turns LED2 on every time division
+			{
+				led2turns = 0;
+				LED2PORT |= (1<<LED2PIN);
+			}
+			
+			if (led2turns == 8)			//turns led2 off 8ms after time division
+			{
+				LED2PORT &= ~(1<<LED2PIN);
+			}
+			
+			if (ledturns >= mstempo)	//turns LED on every downbeat
+			{
+				ledturns = 0;
+				LEDPORT |= (1<<LEDPIN);
+			}
 		
-		if (led2turns >= mstempo && tap == 1) //Turns LED2 on for 8ms every time division (doesn't stop if button controlled)
-		{
-			led2turns = 0;
-			LED2PORT |= (1<<LED2PIN);
-			_delay_ms(8);
-			LED2PORT &= ~(1<<LED2PIN);
+			if (ledturns == 8)			//turns LED off 8ms after downbeat
+			{
+				LEDPORT &= ~(1<<LEDPIN);
+			}
 		}
 		
     }
