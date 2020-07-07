@@ -448,7 +448,7 @@ int main(void)
 				LEDPORT |= (1<<LEDPIN);
 			}
 			
-			if (ledturns == 8){LEDPORT &= ~(1<<LEDPIN);}	//turns LED off 4ms after downbeat
+			if (ledturns >= 8){LEDPORT &= ~(1<<LEDPIN);}	//turns LED off 4ms after downbeat
 			
 			if (laststate == 1 && debounce()==0){laststate =0;}
 				
@@ -707,7 +707,7 @@ int main(void)
 		
 		if (debounce()==1 && laststate==0 && nbtap!=0) //not first tap
 		{
-			if (TCNT1 >= 500){msturns++;}	//round up value if timer counter more than 500µs
+			if (TCNT1 >= 500){msturns++;}	//round up value if timer counter more than 500Âµs
 			
 			if (nbtap == 1)		//if second tap, tempo = time elapsed between the 2 button press
 			{
@@ -888,7 +888,7 @@ int main(void)
 				LEDPORT |= (1<<LEDPIN);
 			}
 		
-			if (ledturns == 8)			//turns LED off 4ms after downbeat
+			if (ledturns >= 8)			//turns LED off 4ms after downbeat
 			{
 				LEDPORT &= ~(1<<LEDPIN);
 			}
