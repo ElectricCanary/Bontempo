@@ -440,6 +440,7 @@ int main(void)
 			
 			useroffset[calibrated] = ((timecal * 400) / 255) - 200;
 			mstempo = (calibrated+1)*100;
+			if (mstempo + useroffset[calibrated] > delaymax){useroffset[calibrated] = delaymax - findClosest(mstempo);} //no overflow in useroffset
 			data = findClosest(mstempo + useroffset[calibrated]);
 			SPI_Transmit(data);
 			if (ledturns >= pgm_read_word_near(tempo + findClosest(mstempo)) - 4)	//turns LED on every downbeat
