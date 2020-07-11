@@ -236,7 +236,7 @@ uint8_t doubletime(void)
 
 void Timerinit(void)
 {
-	TCNT0 = 0;				//timer0, fast PWM, OCRA as TOP, enable compare A interrupt, 64 prescaler
+	TCNT0 = 0;				//timer0, fast PWM, OCRA as TOP, enable compare A interrupt, 1024 prescaler
 	OCR0A = 100;
 	TCCR0A |= (1<<WGM00) | (1<<WGM01);
 	TIMSK0 |= (1<<OCIE0A);
