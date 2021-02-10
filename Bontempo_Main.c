@@ -365,6 +365,7 @@ int main(void)
 	
 	uint8_t speedpresetactive = 0;	//is the speed preset value used?
 	uint8_t depthpresetactive = 0;	//is the depth preset value used?
+	uint8_t timepresetactive = 0;	//is the depth preset value used?
 	uint8_t presetspeed;	//for storing preset values
 	uint32_t presetdepth;
 	uint8_t previousspeed;	//for detecting if speed pot moved
@@ -618,7 +619,7 @@ int main(void)
 			block++;
 		}
 				
-		if (abs(previoustimevalue-timevalue) >= 8)	//if pot move of more than 3%, changing to pot control
+		if ((tap == 1 && abs(previoustimevalue-timevalue) >= 15) || (timepresetactive == 1 && tap == 0 && abs(previoustimevalue-timevalue) >= 15) || (timepresetactive == 0 && tap == 0 && abs(previoustimevalue-timevalue) >= 1))//if pot move of more than 5%, changing to pot control
 		{
 			if (cleanmode == 1)		//if clean mode active time pot course divided per 2
 			{
@@ -633,7 +634,7 @@ int main(void)
 			}
 			
 			previoustimevalue = timevalue;
-			
+			timepresetactive = 0;
 			tap = 0;
 			TCNT1 = 0;
 		}
@@ -797,6 +798,7 @@ int main(void)
 						SPI_Transmit(data);
 						speedpresetactive = 1;
 						depthpresetactive = 1;
+						timepresetactive = 1;
 						previousdepth = depthvalue;
 						previousspeed = speedvalue;
 						block=0;	//Blocking delay time pot and tap button to make it stable
@@ -836,6 +838,7 @@ int main(void)
 							SPI_Transmit(data);
 							speedpresetactive = 1;
 							depthpresetactive = 1;
+							timepresetactive = 1;
 							previousdepth = depthvalue;
 							previousspeed = speedvalue;
 							block=0;
