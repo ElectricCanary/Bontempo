@@ -29,7 +29,6 @@
  Recommended fuses : 
  Reset Pin Enabled, Double Time Disabled: Low Fuse = 0xd2	High Fuse = 0xdc
  (!)Reset Pin Disabled(!), Double Time Enabled: Low Fuse = 0xd2	High Fuse = 0x5c
-
  Don't forget to use Release mode in AtmelStudio.
  
  Thanks to Florian Dupeyron for helping me debug some stuff
@@ -402,7 +401,9 @@ int main(void)
 						eeprom_update_byte((uint8_t*)0,1);
 						break;
 					}
+					_delay_ms(150);
 					fastblink1();
+					_delay_ms(150);
 					break;
 				}
 			}
@@ -416,8 +417,10 @@ int main(void)
 					if (debounce() == 0)
 					{
 						calibrated = 0;
+						_delay_ms(150);
 						fastblink1();
 						fastblink1();
+						_delay_ms(150);
 						break;
 					}
 				}
@@ -442,8 +445,8 @@ int main(void)
 			timecal=timevalue;
 			
 			if(calibrated<=11){
-				useroffset[calibrated] = ((timecal * 400) / 255) - 200;
 				mstempo = (calibrated+1)*100;
+				useroffset[calibrated] = ((timecal * (mstempo/3)) / 255) - (mstempo/6);
 				//if (mstempo + useroffset[calibrated] > delaymax){useroffset[calibrated] = delaymax - findClosest(mstempo);} //no overflow in useroffset
 				data = findClosest(mstempo + useroffset[calibrated]);
 				SPI_Transmit(data);
@@ -451,7 +454,7 @@ int main(void)
 				
 			else{
 				SPI_Transmit(255);
-				delaymax = ((timecal/255)*400) + 1091;
+				delaymax = 1491 - ((timecal*400)/255);
 				mstempo = delaymax;
 			}
 			
@@ -615,7 +618,7 @@ int main(void)
 			block++;
 		}
 				
-		if (abs(previoustimevalue-timevalue) >= 13)	//if pot move of more than 5%, changing to pot control
+		if (abs(previoustimevalue-timevalue) >= 8)	//if pot move of more than 3%, changing to pot control
 		{
 			if (cleanmode == 1)		//if clean mode active time pot course divided per 2
 			{
@@ -729,7 +732,7 @@ int main(void)
 		
 		if (debounce()==1 && laststate==0 && nbtap!=0) //not first tap
 		{
-			if (TCNT1 >= 500){msturns++;}	//round up value if timer counter more than 500µs
+			if (TCNT1 >= 500){msturns++;}	//round up value if timer counter more than 500Âµs
 			
 			if (nbtap == 1)		//if second tap, tempo = time elapsed between the 2 button press
 			{
@@ -798,8 +801,9 @@ int main(void)
 						previousspeed = speedvalue;
 						block=0;	//Blocking delay time pot and tap button to make it stable
 					}
+					_delay_ms(150);
 					fastblink1();
-					_delay_ms(300);
+					_delay_ms(150);
 					break;
 				}
 			}
@@ -836,9 +840,10 @@ int main(void)
 							previousspeed = speedvalue;
 							block=0;
 						}
+						_delay_ms(150);
 						fastblink1();
 						fastblink1();
-						_delay_ms(300);
+						_delay_ms(150);
 						break;
 						}
 					}
@@ -859,8 +864,9 @@ int main(void)
 								eeprom_update_word((uint16_t *)39, mstempo);
 								eeprom_update_dword((uint32_t *)41, depthvalue);
 								eeprom_update_byte((uint8_t *)45, speedvalue);
+								_delay_ms(150);
 								fastblink1();
-								_delay_ms(300);
+								_delay_ms(150);
 								break;
 							}
 						}
@@ -880,18 +886,25 @@ int main(void)
 									eeprom_update_word((uint16_t *)71, mstempo);
 									eeprom_update_dword((uint32_t *)73, depthvalue);
 									eeprom_update_byte((uint8_t *)77, speedvalue);
+									_delay_ms(150);
 									fastblink1();
 									fastblink1();
-									_delay_ms(300);
+									_delay_ms(150);
 									break;
 								}
+							}
+							if (debounce()==1)
+							{
+								fastblink1();
+								fastblink1();
+								fastblink1();
 							}
 						}
 					}
 				}
-		msturns = 0;	//reset tap sequence since this press is not to set tempo
-		nbtap = 0;
-		tapping = 0;
+			msturns = 0;	//reset tap sequence since this press is not to set tempo
+			nbtap = 0;
+			tapping = 0;
 		}
 		
 		
