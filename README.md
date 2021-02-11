@@ -7,3 +7,5 @@ Support : support@electric-canary.com
 The Code, Schematic and PCB manufacturing files are shared under a BY-NC-SA Creative Commons License
 
 Go here for complete license : https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+Please reach out for licencing if you want to use the code in a commercial product. 
