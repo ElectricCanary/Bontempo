@@ -11,3 +11,5 @@ The Code, Schematic and PCB manufacturing files are shared under a BY-NC-SA Crea
 Go here for complete license : https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 Please reach out for licencing if you want to use the code in a commercial product. 
+
+![Populated Board_Cropped - Copie](https://user-images.githubusercontent.com/52302192/174494620-c50b8e09-c7f9-4d66-bbc3-3ff3cab22ddb.jpg)
